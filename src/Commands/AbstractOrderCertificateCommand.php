@@ -140,8 +140,10 @@ class AbstractOrderCertificateCommand extends Command
             storage_path(sprintf('pem_files' . DIRECTORY_SEPARATOR . 'privkey_%s_%s.pem', $domain, $filePostfix)),
             $privateKey,
         );
-        $this->writeToFile(storage_path(
-            sprintf('pem_files' . DIRECTORY_SEPARATOR . 'csr_%s_%s.pem', $domain, $filePostfix)),
+        $this->writeToFile(
+            storage_path(
+            sprintf('pem_files' . DIRECTORY_SEPARATOR . 'csr_%s_%s.pem', $domain, $filePostfix)
+        ),
             $csr,
         );
 
