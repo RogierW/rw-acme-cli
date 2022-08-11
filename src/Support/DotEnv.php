@@ -12,7 +12,7 @@ class DotEnv
 
     public function __construct(string $basePath, string $envFile)
     {
-        if(!file_exists($envFile)) {
+        if (! file_exists($envFile)) {
             throw new InvalidArgumentException(sprintf('%s does not exist', $envFile));
         }
 
@@ -20,9 +20,9 @@ class DotEnv
         $this->envFile = $envFile;
     }
 
-    public function load() :void
+    public function load(): void
     {
-        if (!is_readable($this->envFile)) {
+        if (! is_readable($this->envFile)) {
             throw new RuntimeException(sprintf('%s file is not readable', $this->envFile));
         }
 
@@ -40,7 +40,7 @@ class DotEnv
             $name = trim($name);
             $value = trim($value);
 
-            if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+            if (! array_key_exists($name, $_SERVER) && ! array_key_exists($name, $_ENV)) {
                 putenv(sprintf('%s=%s', $name, $value));
 
                 $_ENV[$name] = $value;

@@ -24,7 +24,7 @@ class CreateAccountCommand extends Command
 
         $output->writeln("<comment>Create an new account with the e-mail address {$email}.</comment>");
 
-        (new CreateAccountAction)->execute($email);
+        (new CreateAccountAction())->execute($email);
 
         $output->writeln('<info>Account has been created.</info>');
 

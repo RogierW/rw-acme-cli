@@ -113,7 +113,7 @@ class AbstractOrderCertificateCommand extends Command
         $this->displayValidationDetails($orderData, $output);
 
         if ($orderData->isPending()) {
-            if (!$this->ask('Do you want to start the file validation? ', $input, $output)) {
+            if (! $this->ask('Do you want to start the file validation? ', $input, $output)) {
                 return Command::SUCCESS;
             }
 
@@ -122,7 +122,7 @@ class AbstractOrderCertificateCommand extends Command
 
         $orderData = $acmeClient->order()->get($id);
 
-        if (!$orderData->isReady()) {
+        if (! $orderData->isReady()) {
             $output->writeln("<comment>Order status: {$orderData->status}.</comment>");
             $this->io->newLine();
             $output->writeln('<error>Unexpected status. Abort renew process.</error>');
@@ -140,7 +140,7 @@ class AbstractOrderCertificateCommand extends Command
         $this->writeToFile(pem_path(sprintf('csr_%s_%s.pem', $domain, $filePostfix)), $csr);
 
         if ($orderData->isNotFinalized()) {
-            if (!$acmeClient->order()->finalize($orderData, $csr)) {
+            if (! $acmeClient->order()->finalize($orderData, $csr)) {
                 $output->writeln('<error>Order could not be finalized.</error>');
 
                 return Command::FAILURE;

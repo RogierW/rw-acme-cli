@@ -26,13 +26,13 @@ class RenewCertificateCommand extends AbstractOrderCertificateCommand
 
         try {
             $certificate = SslCertificate::createForHostName($domain);
-        }catch(Exception $e) {
+        } catch (Exception $e) {
             $output->writeln('<error>Domain has currently no certificate.</error>');
 
             return Command::FAILURE;
         }
 
-        if (!$certificate->expirationDate() instanceof Carbon) {
+        if (! $certificate->expirationDate() instanceof Carbon) {
             $output->writeln('<error>Invalid expiration date.</error>');
 
             return Command::FAILURE;

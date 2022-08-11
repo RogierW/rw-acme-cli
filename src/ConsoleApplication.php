@@ -6,8 +6,8 @@ use Rogierw\RwAcme\Api;
 use Rogierw\RwAcmeCli\Actions\CreateAccountAction;
 use Rogierw\RwAcmeCli\Commands\AccountDetailsCommand;
 use Rogierw\RwAcmeCli\Commands\CreateAccountCommand;
-use Rogierw\RwAcmeCli\Commands\RenewCertificateCommand;
 use Rogierw\RwAcmeCli\Commands\OrderOrderCertificateCommand;
+use Rogierw\RwAcmeCli\Commands\RenewCertificateCommand;
 use Symfony\Component\Console\Application;
 
 class ConsoleApplication extends Application
@@ -18,18 +18,18 @@ class ConsoleApplication extends Application
     {
         parent::__construct('RW Acme CLI', '1.0.0');
 
-        $this->add(new CreateAccountCommand);
-        $this->add(new AccountDetailsCommand);
-        $this->add(new OrderOrderCertificateCommand);
-        $this->add(new RenewCertificateCommand);
+        $this->add(new CreateAccountCommand());
+        $this->add(new AccountDetailsCommand());
+        $this->add(new OrderOrderCertificateCommand());
+        $this->add(new RenewCertificateCommand());
     }
 
     public function bootstrap(): void
     {
         $client = new Api(getenv('EMAIL'), account_path());
 
-        if (!$client->account()->exists()) {
-            (new CreateAccountAction)->execute(getenv('EMAIL'));
+        if (! $client->account()->exists()) {
+            (new CreateAccountAction())->execute(getenv('EMAIL'));
         }
 
         $this->container['acmeClient'] = $client;
