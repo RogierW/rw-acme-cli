@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+(new \Rogierw\RwAcmeCli\Support\DotEnv(dirname(__FILE__), __DIR__ . '/.env'))->load();
+
+$application = new \Rogierw\RwAcmeCli\ConsoleApplication;
+
+$application->bootstrap();
+
+$application->run();

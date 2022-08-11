@@ -1,0 +1,7 @@
+/.idea
+/vendor
+/storage/pem_files/*
+/storage/tmp/*
+!storage/pem_files/.gitkeep
+!storage/tmp/.gitkeep
+.env

@@ -1,0 +1,41 @@
+{
+    "name": "rogierw/rw-acme-cli",
+    "description": "A CLI tool to request, renew and revoke Let's Encrypt certificates.",
+    "homepage": "https://github.com/RogierW/rw-acme-cli",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Rogierw\\RwAcmeCli\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Rogier van der Werf",
+            "email": "rogier@rwweb.nl",
+            "homepage": "http://rogier.eu",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "nesbot/carbon": "^2.61",
+        "rogierw/rw-acme-client": "^2.0",
+        "spatie/ssl-certificate": "^2.2",
+        "symfony/console": "^5.4",
+        "ext-json": "*",
+        "ext-curl": "*"
+    },
+    "require-dev": {
+        "larapack/dd": "^1.1"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "bin": [
+        "rw-acme"
+    ]
+}
