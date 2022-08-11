@@ -1,8 +1,11 @@
 /.idea
 /vendor
+/storage/__account/*
 /storage/pem_files/*
+/storage/cache/*
 /storage/tmp/*
 !storage/pem_files/.gitkeep
+!storage/cache/.gitkeep
 !storage/tmp/.gitkeep
 .env
 .php-cs-fixer.cache

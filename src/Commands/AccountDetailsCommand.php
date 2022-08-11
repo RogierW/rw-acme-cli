@@ -22,7 +22,7 @@ class AccountDetailsCommand extends Command
         $client = $this->getApplication()->resolve('acmeClient');
         $account = $client->account()->get();
 
-        $output->writeln('Account details.');
+        $output->writeln('Account details.' . PHP_EOL);
         $output->write('ID: ');
         $output->writeln($account->id);
         $output->write('Status: ');

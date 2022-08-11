@@ -31,7 +31,7 @@ class DotEnv
 
         $cache = [];
         foreach ($lines as $line) {
-            if (strpos(trim($line), '#') === 0) {
+            if (str_starts_with(trim($line), '#')) {
                 continue;
             }
 
@@ -49,17 +49,25 @@ class DotEnv
             }
         }
 
-        File::write(tmp_path('env.cache.json'), json_encode($cache));
+        $cachePath = storage_path('cache');
+
+        if (is_dir($cachePath)) {
+            File::write($cachePath . DIRECTORY_SEPARATOR . 'env.cache.json', json_encode($cache));
+        }
     }
 
     public static function update(array $attributes): void
     {
-        $config = json_decode(File::read(tmp_path('env.cache.json')), true);
+        $config = json_decode(
+            File::read(storage_path('cache' . DIRECTORY_SEPARATOR . 'env.cache.json')),
+            true
+        );
+
         unset($config['APP_BASE_PATH']);
 
         $envContent = '';
         foreach (array_merge($config, $attributes) as $name => $value) {
-            $envContent .= sprintf("%s=%s\n", $name, $value);
+            $envContent .= sprintf("%s=%s" . PHP_EOL, $name, $value);
         }
 
         File::write(base_path('.env'), $envContent);

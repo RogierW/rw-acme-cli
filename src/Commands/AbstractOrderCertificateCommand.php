@@ -54,7 +54,7 @@ class AbstractOrderCertificateCommand extends Command
     {
         $acmeClient = $this->getAcmeClient();
 
-        if (is_numeric(trim($id))) {
+        if (is_numeric(trim($id ?? ''))) {
             return $acmeClient->order()->get(trim($id));
         }
 
@@ -136,8 +136,14 @@ class AbstractOrderCertificateCommand extends Command
         $privateKey = OpenSsl::generatePrivateKey();
         $csr = OpenSsl::generateCsr($san, $privateKey);
 
-        $this->writeToFile(pem_path(sprintf('privkey_%s_%s.pem', $domain, $filePostfix)), $privateKey);
-        $this->writeToFile(pem_path(sprintf('csr_%s_%s.pem', $domain, $filePostfix)), $csr);
+        $this->writeToFile(
+            storage_path(sprintf('pem_files' . DIRECTORY_SEPARATOR . 'privkey_%s_%s.pem', $domain, $filePostfix)),
+            $privateKey,
+        );
+        $this->writeToFile(storage_path(
+            sprintf('pem_files' . DIRECTORY_SEPARATOR . 'csr_%s_%s.pem', $domain, $filePostfix)),
+            $csr,
+        );
 
         if ($orderData->isNotFinalized()) {
             if (! $acmeClient->order()->finalize($orderData, $csr)) {
@@ -153,15 +159,23 @@ class AbstractOrderCertificateCommand extends Command
             $certificateBundle = $acmeClient->certificate()->getBundle($orderData);
 
             $this->writeToFile(
-                pem_path(sprintf('certificate_%s_%s.pem', $domain, $filePostfix)),
+                storage_path(vsprintf('pem_files%scertificate_%s_%s.pem', [
+                    DIRECTORY_SEPARATOR,
+                    $domain,
+                    $filePostfix,
+                ])),
                 $certificateBundle->certificate
             );
             $this->writeToFile(
-                pem_path(sprintf('fullchain_%s_%s.pem', $domain, $filePostfix)),
+                storage_path(vsprintf('pem_files%sfullchain_%s_%s.pem', [
+                    DIRECTORY_SEPARATOR,
+                    $domain,
+                    $filePostfix,
+                ])),
                 $certificateBundle->fullchain
             );
 
-            $output->writeln('<info>PEM files are successfully stored in ' . pem_path() . '.</info>');
+            $output->writeln('<info>PEM files are successfully stored in ' . storage_path('pem_files') . '.</info>');
 
             return Command::SUCCESS;
         }

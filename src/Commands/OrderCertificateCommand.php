@@ -5,7 +5,7 @@ namespace Rogierw\RwAcmeCli\Commands;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class OrderOrderCertificateCommand extends AbstractOrderCertificateCommand
+class OrderCertificateCommand extends AbstractOrderCertificateCommand
 {
     protected function configure(): void
     {
