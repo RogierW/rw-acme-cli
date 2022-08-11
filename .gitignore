@@ -5,3 +5,4 @@
 !storage/pem_files/.gitkeep
 !storage/tmp/.gitkeep
 .env
+.php-cs-fixer.cache
