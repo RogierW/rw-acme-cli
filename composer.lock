@@ -213,16 +213,16 @@
         },
         {
             "name": "rogierw/rw-acme-client",
-            "version": "2.0.0",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/RogierW/rw-acme-client.git",
-                "reference": "3dbb7897180e11ebf67b91ca7e8985bdd742dde2"
+                "reference": "ad7ee35941a8a919a39c5e984d542c43a5348b06"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/RogierW/rw-acme-client/zipball/3dbb7897180e11ebf67b91ca7e8985bdd742dde2",
-                "reference": "3dbb7897180e11ebf67b91ca7e8985bdd742dde2",
+                "url": "https://api.github.com/repos/RogierW/rw-acme-client/zipball/ad7ee35941a8a919a39c5e984d542c43a5348b06",
+                "reference": "ad7ee35941a8a919a39c5e984d542c43a5348b06",
                 "shasum": ""
             },
             "require": {
@@ -262,9 +262,9 @@
             "homepage": "https://github.com/RogierW/rw-acme-client",
             "support": {
                 "issues": "https://github.com/RogierW/rw-acme-client/issues",
-                "source": "https://github.com/RogierW/rw-acme-client/tree/2.0.0"
+                "source": "https://github.com/RogierW/rw-acme-client/tree/2.0.1"
             },
-            "time": "2022-08-09T11:25:29+00:00"
+            "time": "2022-08-16T14:17:29+00:00"
         },
         {
             "name": "spatie/data-transfer-object",
