@@ -8,8 +8,10 @@ use Rogierw\RwAcme\DTO\DomainValidationData;
 use Rogierw\RwAcme\DTO\OrderData;
 use Rogierw\RwAcme\Exceptions\DomainValidationException;
 use Rogierw\RwAcme\Support\OpenSsl;
+use Rogierw\RwAcmeCli\Concerns\HasAlerts;
 use Rogierw\RwAcmeCli\Concerns\HasQuestions;
 use Rogierw\RwAcmeCli\Support\File;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +22,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class AbstractOrderCertificateCommand extends Command
 {
     use HasQuestions;
+    use HasAlerts;
 
     protected ?Api $acmeClient;
     protected ?AccountData $accountData;
@@ -42,6 +45,10 @@ class AbstractOrderCertificateCommand extends Command
     protected function getSan(InputInterface $input): array
     {
         $san = [$input->getArgument('domain')];
+
+        if (! str_contains($san[0], '.') || str_starts_with($san[0], '.') || str_ends_with($san[0], '.')) {
+            throw new RuntimeException("`{$san[0]}` is not a valid domain.");
+        }
 
         if ($input->getOption('include-www')) {
             $san[] = 'www.' . $san[0];
@@ -98,7 +105,14 @@ class AbstractOrderCertificateCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $san = $this->getSan($input);
+        try {
+            $san = $this->getSan($input);
+        } catch (RuntimeException $e) {
+            $this->writeError($output, $e->getMessage());
+
+            return Command::FAILURE;
+        }
+
         $domain = $san[0];
 
         $acmeClient = $this->getAcmeClient();
@@ -125,7 +139,8 @@ class AbstractOrderCertificateCommand extends Command
         if (! $orderData->isReady()) {
             $output->writeln("<comment>Order status: {$orderData->status}.</comment>");
             $this->io->newLine();
-            $output->writeln('<error>Unexpected status. Abort renew process.</error>');
+
+            $this->writeError($output, 'Unexpected status. Abort renew process.');
             $this->io->newLine();
 
             return Command::FAILURE;
@@ -138,7 +153,7 @@ class AbstractOrderCertificateCommand extends Command
 
         $this->writeToFile(
             storage_path(sprintf('pem_files' . DIRECTORY_SEPARATOR . 'privkey_%s_%s.pem', $domain, $filePostfix)),
-            $privateKey,
+            OpenSsl::openSslKeyToString($privateKey),
         );
         $this->writeToFile(
             storage_path(
@@ -156,10 +171,19 @@ class AbstractOrderCertificateCommand extends Command
         }
 
         if ($orderData->isFinalized()) {
+            $this->io->newLine();
             $output->writeln('<info>The order is successfully finalized.</info>');
 
             $certificateBundle = $acmeClient->certificate()->getBundle($orderData);
 
+            $this->writeToFile(
+                storage_path(vsprintf('pem_files%sorder_id_%s_%s.txt', [
+                    DIRECTORY_SEPARATOR,
+                    $domain,
+                    $filePostfix,
+                ])),
+                $orderData->id
+            );
             $this->writeToFile(
                 storage_path(vsprintf('pem_files%scertificate_%s_%s.pem', [
                     DIRECTORY_SEPARATOR,

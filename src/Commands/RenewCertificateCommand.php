@@ -2,9 +2,8 @@
 
 namespace Rogierw\RwAcmeCli\Commands;
 
-use Carbon\Carbon;
 use Exception;
-use Spatie\SslCertificate\SslCertificate;
+use Rogierw\RwAcmeCli\Actions\FetchCertificateFromHostAction;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,18 +21,12 @@ class RenewCertificateCommand extends AbstractOrderCertificateCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $domain = $input->getArgument('domain');
+        $domain = $this->getSan($input)[0];
 
         try {
-            $certificate = SslCertificate::createForHostName($domain);
-        } catch (Exception $e) {
-            $output->writeln('<error>Domain has currently no certificate.</error>');
-
-            return Command::FAILURE;
-        }
-
-        if (! $certificate->expirationDate() instanceof Carbon) {
-            $output->writeln('<error>Invalid expiration date.</error>');
+            $certificate = (new FetchCertificateFromHostAction)->execute($domain);
+        } catch (Exception) {
+            $this->writeError($output, 'Domain has currently no certificate.');
 
             return Command::FAILURE;
         }
