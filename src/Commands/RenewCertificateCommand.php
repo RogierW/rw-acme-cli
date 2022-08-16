@@ -24,7 +24,7 @@ class RenewCertificateCommand extends AbstractOrderCertificateCommand
         $domain = $this->getSan($input)[0];
 
         try {
-            $certificate = (new FetchCertificateFromHostAction)->execute($domain);
+            $certificate = (new FetchCertificateFromHostAction())->execute($domain);
         } catch (Exception) {
             $this->writeError($output, 'Domain has currently no certificate.');
 

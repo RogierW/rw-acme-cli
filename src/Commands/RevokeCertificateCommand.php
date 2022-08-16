@@ -64,7 +64,7 @@ class RevokeCertificateCommand extends Command
                     $order->status,
                     $order->expires,
                     $order->identifiers[0]['value'],
-                ]
+                ],
             ])
             ->render();
 

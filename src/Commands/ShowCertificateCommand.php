@@ -33,16 +33,16 @@ class ShowCertificateCommand extends Command
         $domain = $input->getArgument('domain');
 
         try {
-            $certificate = (new FetchCertificateFromHostAction)->execute($domain);
-        }catch (RuntimeException $e) {
+            $certificate = (new FetchCertificateFromHostAction())->execute($domain);
+        } catch (RuntimeException $e) {
             $this->writeError($output, $e->getMessage());
 
             return Command::FAILURE;
-        }catch (Exception) {
-            $certificate = (new FetchCertificateFromHostAction)->execute(hostName: $domain, verifyCertificate: false);
+        } catch (Exception) {
+            $certificate = (new FetchCertificateFromHostAction())->execute(hostName: $domain, verifyCertificate: false);
 
             try {
-                (new VerifyHostAction)->execute($domain, $certificate);
+                (new VerifyHostAction())->execute($domain, $certificate);
             } catch (Exception $e) {
                 $this->writeError($output, $e->getMessage());
 

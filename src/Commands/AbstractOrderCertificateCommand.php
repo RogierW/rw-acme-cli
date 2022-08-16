@@ -157,8 +157,8 @@ class AbstractOrderCertificateCommand extends Command
         );
         $this->writeToFile(
             storage_path(
-            sprintf('pem_files' . DIRECTORY_SEPARATOR . 'csr_%s_%s.pem', $domain, $filePostfix)
-        ),
+                sprintf('pem_files' . DIRECTORY_SEPARATOR . 'csr_%s_%s.pem', $domain, $filePostfix)
+            ),
             $csr,
         );
 
