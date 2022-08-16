@@ -8,6 +8,7 @@ use Rogierw\RwAcmeCli\Commands\AccountDetailsCommand;
 use Rogierw\RwAcmeCli\Commands\CreateAccountCommand;
 use Rogierw\RwAcmeCli\Commands\OrderCertificateCommand;
 use Rogierw\RwAcmeCli\Commands\RenewCertificateCommand;
+use Rogierw\RwAcmeCli\Commands\ShowCertificateCommand;
 use Symfony\Component\Console\Application;
 
 class ConsoleApplication extends Application
@@ -20,6 +21,7 @@ class ConsoleApplication extends Application
 
         $this->add(new CreateAccountCommand());
         $this->add(new AccountDetailsCommand());
+        $this->add(new ShowCertificateCommand());
         $this->add(new OrderCertificateCommand());
         $this->add(new RenewCertificateCommand());
     }
