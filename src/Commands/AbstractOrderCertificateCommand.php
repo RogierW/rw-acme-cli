@@ -120,7 +120,7 @@ class AbstractOrderCertificateCommand extends Command
                     $output->writeln('Record type: TXT');
                     $output->writeln('Name: ' . $challengeData['name']);
                     $output->writeln('Value: ' . $challengeData['value']);
-                }else {
+                } else {
                     $output->writeln('Filename: ' . $challengeData['filename']);
                     $output->writeln('Content: ' . $challengeData['content']);
                 }
@@ -268,7 +268,7 @@ class AbstractOrderCertificateCommand extends Command
 
         if ($acmeClient->domainValidation()->allChallengesPassed($orderData)) {
             $output->writeln('Domain validation has been completed.');
-        }else {
+        } else {
             $this->writeError($output, "Domain validation hasn't been completed.");
         }
 
