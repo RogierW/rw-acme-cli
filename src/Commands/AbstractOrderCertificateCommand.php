@@ -6,6 +6,7 @@ use Rogierw\RwAcme\Api;
 use Rogierw\RwAcme\DTO\AccountData;
 use Rogierw\RwAcme\DTO\DomainValidationData;
 use Rogierw\RwAcme\DTO\OrderData;
+use Rogierw\RwAcme\Enums\AuthorizationChallengeEnum;
 use Rogierw\RwAcme\Exceptions\DomainValidationException;
 use Rogierw\RwAcme\Support\OpenSsl;
 use Rogierw\RwAcmeCli\Concerns\HasAlerts;
@@ -16,6 +17,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -24,8 +26,9 @@ class AbstractOrderCertificateCommand extends Command
     use HasQuestions;
     use HasAlerts;
 
-    protected ?Api $acmeClient;
+    protected ?Api $acmeClient = null;
     protected ?AccountData $accountData;
+    protected AuthorizationChallengeEnum $authChallenge = AuthorizationChallengeEnum::HTTP;
 
     protected ?SymfonyStyle $io;
 
@@ -33,13 +36,18 @@ class AbstractOrderCertificateCommand extends Command
     {
         $this
             ->addArgument('domain', InputArgument::REQUIRED, 'For which domain do you want a SSL certificate?')
-            ->addOption('include-www', null, InputOption::VALUE_NONE, 'Include the www. subdomain')
+            ->addOption('dcv-dns', 'd', InputOption::VALUE_NONE, 'Set DCV challenge to dns-01')
+            ->addOption('include-www', 'w', InputOption::VALUE_NONE, 'Include the www. subdomain')
             ->addOption('id', null, InputOption::VALUE_REQUIRED, 'An existing LE request ID');
     }
 
     protected function getAcmeClient(): Api
     {
-        return $this->acmeClient ?? $this->getApplication()->resolve('acmeClient');
+        if (is_null($this->acmeClient)) {
+            $this->acmeClient = $this->getApplication()->resolve('acmeClient');
+        }
+
+        return $this->acmeClient;
     }
 
     protected function getSan(InputInterface $input): array
@@ -70,34 +78,55 @@ class AbstractOrderCertificateCommand extends Command
 
     protected function displayValidationDetails(OrderData $orderData, OutputInterface $output): void
     {
-        $acmeClient = $this->getAcmeClient();
+        $acmeClient = $this->getAcmeClient()->setLogger(new ConsoleLogger($output));
 
         /** @var DomainValidationData[] $domainValidation */
         $domainValidation = $acmeClient->domainValidation()->status($orderData);
 
         foreach ($domainValidation as $domainValidationData) {
             $identifier = $domainValidationData->identifier['value'];
+            $type = $this->authChallenge === AuthorizationChallengeEnum::HTTP ? 'file' : 'dns';
 
             if ($domainValidationData->isValid()) {
-                $output->writeln("File validation completed for {$identifier}.");
-                $output->writeln('Validated at: ' . $domainValidationData->file['validated']);
+                $output->writeln("Domain validation completed for {$identifier}.");
+                $output->writeln('Validated at: ' . $domainValidationData->{$type}['validated']);
 
                 continue;
             }
 
-            $validationDetails = $acmeClient->domainValidation()->getFileValidationData([$domainValidationData])[0];
+            $validationDetails = $acmeClient
+                ->domainValidation()
+                ->getValidationData([$domainValidationData], $this->authChallenge);
 
-            $output->writeln("Validation details of {$identifier}");
-            $output->writeln('Method: http-01');
-            $output->write('Status: ');
-            $output->writeln($domainValidationData->status);
-            $output->write('Expires: ');
-            $output->writeln($domainValidationData->expires);
-            $output->write('Filename: ');
-            $output->writeln($validationDetails['filename']);
-            $output->write('Content: ');
-            $output->writeln($validationDetails['content']);
-            $this->io->newLine();
+            $this->io->title("Validation details of {$identifier}");
+
+            foreach ($validationDetails as $challengeData) {
+                if ($challengeData['type'] !== $this->authChallenge->value) {
+                    continue;
+                }
+
+                $output->writeln('Domain: ' . $challengeData['identifier']);
+                $output->writeln('Method: ' . $challengeData['type']);
+                $output->writeln('Status: ' . $domainValidationData->{$type}['status']);
+                $output->writeln('Expires: ' . $domainValidationData->expires);
+
+                if (isset($domainValidationData->{$type}['error']['detail'])) {
+                    $output->writeln('Error: ' . $domainValidationData->{$type}['error']['detail']);
+                }
+
+                if ($challengeData['type'] === AuthorizationChallengeEnum::DNS->value
+                    && $this->authChallenge === AuthorizationChallengeEnum::DNS
+                ) {
+                    $output->writeln('Record type: TXT');
+                    $output->writeln('Name: ' . $challengeData['name']);
+                    $output->writeln('Value: ' . $challengeData['value']);
+                }else {
+                    $output->writeln('Filename: ' . $challengeData['filename']);
+                    $output->writeln('Content: ' . $challengeData['content']);
+                }
+
+                $this->io->newLine();
+            }
         }
     }
 
@@ -115,19 +144,24 @@ class AbstractOrderCertificateCommand extends Command
 
         $domain = $san[0];
 
-        $acmeClient = $this->getAcmeClient();
+        $acmeClient = $this->getAcmeClient()->setLogger(new ConsoleLogger($output));
         $this->accountData = $acmeClient->account()->get();
+
+        if ($input->getOption('dcv-dns')) {
+            $this->authChallenge = AuthorizationChallengeEnum::DNS;
+        }
 
         $orderData = $this->getOrderData($san, $input->getOption('id'));
         $id = $orderData->id;
 
         $output->writeln("<comment>Order ID is {$id}.</comment>");
+        $output->writeln("<comment>Authorization challenge is {$this->authChallenge->value}.</comment>");
         $this->io->newLine();
 
         $this->displayValidationDetails($orderData, $output);
 
         if ($orderData->isPending()) {
-            if (! $this->ask('Do you want to start the file validation? ', $input, $output)) {
+            if (! $this->ask('Do you want to start the domain validation? ', $input, $output)) {
                 return Command::SUCCESS;
             }
 
@@ -140,7 +174,7 @@ class AbstractOrderCertificateCommand extends Command
             $output->writeln("<comment>Order status: {$orderData->status}.</comment>");
             $this->io->newLine();
 
-            $this->writeError($output, 'Unexpected status. Abort renew process.');
+            $this->writeError($output, 'Unexpected status. Abort...');
             $this->io->newLine();
 
             return Command::FAILURE;
@@ -214,14 +248,14 @@ class AbstractOrderCertificateCommand extends Command
 
     protected function startDcv(OrderData $orderData, InputInterface $input, OutputInterface $output): void
     {
-        $acmeClient = $this->getAcmeClient();
+        $acmeClient = $this->getAcmeClient()->setLogger(new ConsoleLogger($output));
         $domainValidation = $acmeClient->domainValidation()->status($orderData);
 
         foreach ($domainValidation as $domainValidationData) {
             try {
                 startValidation:
 
-                $acmeClient->domainValidation()->start($this->accountData, $domainValidationData);
+                $acmeClient->domainValidation()->start($this->accountData, $domainValidationData, $this->authChallenge);
             } catch (DomainValidationException $exception) {
                 $output->writeln("<error>{$exception->getMessage()}</error>");
                 $this->io->newLine();
@@ -231,6 +265,15 @@ class AbstractOrderCertificateCommand extends Command
                 }
             }
         }
+
+        if ($acmeClient->domainValidation()->allChallengesPassed($orderData)) {
+            $output->writeln('Domain validation has been completed.');
+        }else {
+            $this->writeError($output, "Domain validation hasn't been completed.");
+        }
+
+        $this->io->newLine();
+        $this->displayValidationDetails($orderData, $output);
     }
 
     protected function writeToFile(string $file, string $content): void
