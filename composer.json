@@ -23,7 +23,7 @@
     "require": {
         "php": "^8.2",
         "nesbot/carbon": "^2.61",
-        "rogierw/rw-acme-client": "^3.0.2",
+        "rogierw/rw-acme-client": "^3.0.3",
         "spatie/ssl-certificate": "^2.2",
         "symfony/console": "^6.1",
         "ext-json": "*",
