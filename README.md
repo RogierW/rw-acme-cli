@@ -11,7 +11,9 @@ This command-line tool allows you to request, renew and revoke SSL certificates 
 ## Installation
 You can install the package via composer:
 
-`composer global require rogierw/rw-acme-cli`
+```php
+composer global require rogierw/rw-acme-cli
+```
 
 ## Setup environment
 Copy the .env.example to .env and changes the default values.
