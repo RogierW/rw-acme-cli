@@ -8,7 +8,14 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     require __DIR__ . '/../../autoload.php';
 }
 
-(new \Rogierw\RwAcmeCli\Support\DotEnv(dirname(__FILE__), __DIR__ . '/.env'))->load();
+try {
+    (new \Rogierw\RwAcmeCli\Support\DotEnv(dirname(__FILE__), __DIR__ . '/.env'))->load();
+} catch (\InvalidArgumentException $exception) {
+    printf("\e[1;31m %s \e[0m%s", 'Error occurred - abort', PHP_EOL);
+    printf("\e[1;31m %s \e[0m %s", $exception->getMessage(), PHP_EOL);
+
+    exit(1);
+}
 
 $application = new \Rogierw\RwAcmeCli\ConsoleApplication;
 
