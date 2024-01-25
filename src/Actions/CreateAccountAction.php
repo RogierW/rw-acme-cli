@@ -3,6 +3,7 @@
 namespace Rogierw\RwAcmeCli\Actions;
 
 use Rogierw\RwAcme\Api;
+use Rogierw\RwAcme\Support\LocalFileAccount;
 use Rogierw\RwAcmeCli\Support\DotEnv;
 use Rogierw\RwAcmeCli\Support\File;
 
@@ -10,7 +11,10 @@ class CreateAccountAction
 {
     public function execute(string $email): void
     {
-        $client = new Api($email, account_path());
+        $localAccount = new LocalFileAccount(account_path(), $email);
+
+        $client = new Api(localAccount: $localAccount);
+
         $account = $client->account()->create();
 
         File::write(

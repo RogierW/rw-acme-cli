@@ -3,6 +3,7 @@
 namespace Rogierw\RwAcmeCli;
 
 use Rogierw\RwAcme\Api;
+use Rogierw\RwAcme\Support\LocalFileAccount;
 use Rogierw\RwAcmeCli\Actions\CreateAccountAction;
 use Rogierw\RwAcmeCli\Commands\AccountDetailsCommand;
 use Rogierw\RwAcmeCli\Commands\CreateAccountCommand;
@@ -32,8 +33,9 @@ class ConsoleApplication extends Application
     {
         $this->createRequiredDirectories();
 
-        $client = new Api(getenv('EMAIL'), account_path());
+        $localAccount = new LocalFileAccount(account_path(), getenv('EMAIL'));
 
+        $client = new Api(localAccount: $localAccount);
 
         if (! $client->account()->exists()) {
             (new CreateAccountAction())->execute(getenv('EMAIL'));
